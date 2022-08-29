@@ -1,76 +1,83 @@
 // Your code here
-function createEmployeeRecord(employee){
-    const employObj = {
-        firstName: employee[0],
-        familyName: employee[1],
-        title: employee[2],
-        payPerHour: employee[3],
-        timeInEvents:[],
-        timeOutEvents: [], 
+let employeeRecords = [];
 
+const createEmployeeRecord = ([firstName, familyName, title, payPerHour]) => {
+  let employeeRecord = {
+    firstName,
+    familyName,
+    title,
+    payPerHour,
+    timeInEvents: [],
+    timeOutEvents: [],
+  };
+  employeeRecords.push(employeeRecord);
+  return employeeRecord;
+};
+
+const createEmployeeRecords = (employee) => {
+  let employeeContainer = [];
+  employee.map((e) => {
+    employeeContainer.push(createEmployeeRecord(e));
+  });
+  return employeeContainer;
+};
+
+const createTimeInEvent = (employee, time) => {
+  let date = time.slice(0, 10);
+  let hour = parseInt(time.slice(11));
+  let type = "TimeIn";
+  let timeIn = {
+    type,
+    date,
+    hour,
+  };
+  employee.timeInEvents.push(timeIn);
+  return employee;
+};
+
+const createTimeOutEvent = (employee, time) => {
+  let date = time.slice(0, 10);
+  let hour = parseInt(time.slice(11));
+  let type = "TimeOut";
+  let timeOut = {
+    type,
+    date,
+    hour,
+  };
+  employee.timeOutEvents.push(timeOut);
+  return employee;
+};
+
+const hoursWorkedOnDate = (employee, day) => {
+  for (let i = 0; i < employee.timeInEvents.length; i++) {
+    if (day === employee.timeInEvents[i].date) {
+      let hoursWorked = Math.abs(
+        (employee.timeInEvents[i].hour - employee.timeOutEvents[i].hour) / 100
+      );
+      return hoursWorked;
     }
-    return employObj
+  }
+};
 
+const wagesEarnedOnDate = (employee, day) => {
+  const wageEarned = hoursWorkedOnDate(employee, day) * employee.payPerHour;
+  return wageEarned;
+};
 
-}
+const allWagesFor = (employee) => {
+  let totalWagesEarned = employee.timeInEvents.reduce((totalWage, el) => {
+    let wage = wagesEarnedOnDate(employee, el.date);
+    let earned = totalWage + wage;
+    totalWage + wage;
+    return earned;
+  }, 0);
+  return totalWagesEarned;
+};
 
-function createEmployeeRecords (employees) {
-    let arrayContainer  = []
-
-
-    for (let i = 0; i < employees.length; i++){
-      arrayContainer.push(createEmployeeRecord(employees[i]))
-
-    }
-
-    return arrayContainer 
-}
-
-function createTimeInEvent(employeeRec, dateTime) {
-    const timeEvent = {
-        type: "TimeIn",
-        hour: parseInt(dateTime.split(" ")[1]),
-        date: dateTime.split(" ")[0],
-    }
-
-    employeeRec.timeInEvents.push(timeEvent)
-    return employeeRec
-}
-
-function createTimeOutEvent(employeeRec, dateTime) {
-    const timeEventOut = {
-        type: "TimeOut",
-        hour: parseInt(dateTime.split(" ")[1]),
-        date: dateTime.split(" ")[0],
-    }
-
-    employeeRec.timeOutEvents.push(timeEventOut)
-    return employeeRec
-}
-
-function hoursWorkedOnDate(employeeRec, dateTime) {
-
-        let varIn = employeeRec.timeInEvents.find((timeEvent) => timeEvent.date === dateTime)
-
-        let varOut = employeeRec.timeOutEvents.find((timeEventOut) => timeEventOut.date === dateTime)
-
-           return (varOut.hour - varIn.hour)/100
-
-}
-
-function wagesEarnedOnDate(employeeRec, dateTime) {
-
-    return hoursWorkedOnDate(employeeRec,dateTime)*employeeRec.payPerHour
-
-}
-
-function allWagesFor(employeeRec) {
-
-    let addAllWages = 0 
-    employeeRec.timeInEvents.forEach((timeEvent) =>{
-        addAllWages += wagesEarnedOnDate(employeeRec,timeEvent.date)    
-    })
-
-   return addAllWages
-
-}
+const calculatePayroll = (employees) => {
+  let total = employees.reduce((totalWage, workerWage) => {
+    let dayWage = allWagesFor(workerWage, workerWage.timeInEvents[0].date);
+    return totalWage + dayWage;
+  }, 0);
+  return total;
+};
